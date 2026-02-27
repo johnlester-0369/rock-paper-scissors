@@ -1,0 +1,423 @@
+/* ==================== DESIGN TOKENS ==================== */
+:root {
+  /* Dark arcade palette — lime/magenta pair creates strong player-vs-cpu identity */
+  --bg:              #06080f;
+  --surface:         #0c1022;
+  --surface-hi:      #131928;
+  --border:          #1a2136;
+  --border-bright:   #252f48;
+
+  /* Player identity: electric lime — unexpected, energetic */
+  --player:          #c9ff00;
+  --player-glow:     rgba(201, 255, 0, 0.28);
+  --player-dim:      rgba(201, 255, 0, 0.08);
+
+  /* CPU identity: hot magenta — a clear adversary color */
+  --cpu:             #ff3eac;
+  --cpu-glow:        rgba(255, 62, 172, 0.28);
+  --cpu-dim:         rgba(255, 62, 172, 0.08);
+
+  /* Rock hover identity: cool electric blue */
+  --rock-color:      #5eaaff;
+  --rock-glow:       rgba(94, 170, 255, 0.28);
+
+  /* Outcome colors with dark-theme-tuned saturation */
+  --win:             #20d47e;
+  --win-bg:          rgba(32, 212, 126, 0.08);
+  --win-border:      rgba(32, 212, 126, 0.22);
+  --lose:            #ff3eac;
+  --lose-bg:         rgba(255, 62, 172, 0.08);
+  --lose-border:     rgba(255, 62, 172, 0.22);
+  --draw:            #ffb800;
+  --draw-bg:         rgba(255, 184, 0, 0.08);
+  --draw-border:     rgba(255, 184, 0, 0.22);
+
+  --text:            #dde5ff;
+  --text-muted:      #3d4d70;
+  --text-dim:        #1e2840;
+
+  /* Spacing scale */
+  --sp-1: 4px;
+  --sp-2: 8px;
+  --sp-3: 12px;
+  --sp-4: 16px;
+  --sp-5: 20px;
+  --sp-6: 24px;
+  --sp-8: 32px;
+  --sp-10: 40px;
+  --sp-12: 48px;
+
+  /* Radius scale */
+  --r-sm: 6px;
+  --r-md: 10px;
+  --r-lg: 14px;
+  --r-xl: 20px;
+  --r-full: 9999px;
+}
+
+/* ==================== RESET & BASE ==================== */
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: 'Syne', sans-serif;
+  min-height: 100dvh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: var(--sp-6) var(--sp-4);
+  color: var(--text);
+
+  /* Three-layer background: ambient lime glow + ambient magenta glow + dot grid.
+     Creates atmosphere without overwhelming the UI chrome. */
+  background-color: var(--bg);
+  background-image:
+    radial-gradient(ellipse at 15% 60%, rgba(201,255,0,0.04) 0%, transparent 55%),
+    radial-gradient(ellipse at 85% 25%, rgba(255,62,172,0.04) 0%, transparent 45%),
+    radial-gradient(circle, rgba(255,255,255,0.028) 1px, transparent 1px);
+  background-size: 100% 100%, 100% 100%, 22px 22px;
+}
+
+/* ==================== LAYOUT ==================== */
+.app {
+  width: 100%;
+  max-width: 420px;
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-3);
+}
+
+/* ==================== HEADER ==================== */
+.header {
+  text-align: center;
+  padding: 0 0 var(--sp-2);
+}
+
+.header h1 {
+  font-size: clamp(1.6rem, 7vw, 2rem);
+  font-weight: 700;
+  letter-spacing: -0.04em;
+  color: var(--text);
+  line-height: 1;
+}
+
+/* Dot separators carry the lime accent for consistent identity threading */
+.header h1 .dot {
+  color: var(--player);
+  font-weight: 400;
+}
+
+.header p {
+  font-size: 0.625rem;
+  font-weight: 700;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  margin-top: var(--sp-2);
+}
+
+/* ==================== SCOREBOARD ==================== */
+.scoreboard {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--r-xl);
+  padding: var(--sp-5) var(--sp-6);
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: center;
+  gap: var(--sp-4);
+  position: relative;
+  overflow: hidden;
+}
+
+/* Top accent line — lime on the player side, magenta on CPU side, meets in the middle */
+.scoreboard::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: linear-gradient(90deg, var(--player) 0%, transparent 45%, transparent 55%, var(--cpu) 100%);
+  opacity: 0.5;
+}
+
+.score-block {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-1);
+}
+
+.score-block.player { align-items: flex-start; }
+.score-block.cpu    { align-items: flex-end; }
+
+.score-label {
+  font-size: 0.5625rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.16em;
+}
+
+/* Player and CPU labels inherit their identity colors */
+.score-block.player .score-label { color: var(--player); opacity: 0.75; }
+.score-block.cpu    .score-label { color: var(--cpu);    opacity: 0.75; }
+
+.score-value {
+  font-size: 3.25rem;
+  font-weight: 400;
+  line-height: 1;
+  transition: transform 0.15s ease;
+}
+
+#player-score { color: var(--player); }
+#cpu-score    { color: var(--cpu); }
+
+.score-value.bump { transform: scale(1.22); }
+
+.score-sep {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.score-sep span {
+  font-size: 1.5rem;
+  color: var(--text-dim);
+}
+
+/* ==================== ROUND PILL ==================== */
+/* Floats between scoreboard and arena as a lightweight status indicator */
+.round-pill {
+  align-self: center;
+  font-size: 0.5625rem;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  background: var(--surface-hi);
+  border: 1px solid var(--border);
+  border-radius: var(--r-full);
+  padding: 4px 12px;
+}
+
+/* ==================== ARENA ==================== */
+.arena {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--r-xl);
+  padding: var(--sp-6);
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: center;
+  gap: var(--sp-4);
+  min-height: 144px;
+}
+
+.arena-side {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--sp-2);
+}
+
+.arena-label {
+  font-size: 0.5625rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.16em;
+  color: var(--text-muted);
+}
+
+.arena-choice {
+  width: 80px;
+  height: 80px;
+  border-radius: var(--r-lg);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 2.25rem;
+  background: var(--surface-hi);
+  border: 1px solid var(--border-bright);
+  transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease, opacity 0.2s ease;
+}
+
+/* Glowing win state uses semantic win color, not player/cpu identity — outcome is neutral */
+.arena-choice.win {
+  border-color: var(--win);
+  box-shadow: 0 0 0 3px rgba(32,212,126,0.15), 0 0 24px rgba(32,212,126,0.2);
+  animation: pop 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.arena-choice.lose {
+  border-color: var(--border);
+  opacity: 0.4;
+}
+
+.arena-choice.draw {
+  border-color: var(--draw);
+  box-shadow: 0 0 18px rgba(255,184,0,0.18);
+}
+
+.arena-vs {
+  font-size: 0.625rem;
+  font-weight: 700;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--text-dim);
+}
+
+/* ==================== RESULT BADGE ==================== */
+.result-badge {
+  text-align: center;
+  border-radius: var(--r-md);
+  font-size: 0.8125rem;
+  font-weight: 700;
+  letter-spacing: 0.03em;
+  opacity: 0;
+  transform: translateY(6px) scale(0.96);
+  transition: opacity 0.22s ease, transform 0.22s ease;
+  /* Fixed height prevents layout shift during round transitions */
+  min-height: 46px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid transparent;
+}
+
+.result-badge.visible {
+  opacity: 1;
+  transform: translateY(0) scale(1);
+}
+
+.result-badge.win  { background: var(--win-bg);  border-color: var(--win-border);  color: var(--win);  }
+.result-badge.lose { background: var(--lose-bg); border-color: var(--lose-border); color: var(--lose); }
+.result-badge.draw { background: var(--draw-bg); border-color: var(--draw-border); color: var(--draw); }
+
+/* ==================== CHOICE BUTTONS ==================== */
+.choices {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: var(--sp-3);
+}
+
+.choice-btn {
+  background: var(--surface);
+  border: 1px solid var(--border-bright);
+  border-radius: var(--r-lg);
+  padding: var(--sp-5) var(--sp-2) var(--sp-4);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--sp-2);
+  cursor: pointer;
+  transition: border-color 0.18s ease, transform 0.13s ease, box-shadow 0.18s ease, background 0.18s ease;
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* Each choice has its own hover identity to reinforce which move you're about to make */
+[data-choice="rock"]:hover {
+  border-color: var(--rock-color);
+  background: rgba(94,170,255,0.05);
+  box-shadow: 0 0 22px var(--rock-glow), 0 6px 20px rgba(0,0,0,0.5);
+  transform: translateY(-3px);
+}
+
+[data-choice="paper"]:hover {
+  border-color: var(--player);
+  background: var(--player-dim);
+  box-shadow: 0 0 22px var(--player-glow), 0 6px 20px rgba(0,0,0,0.5);
+  transform: translateY(-3px);
+}
+
+[data-choice="scissors"]:hover {
+  border-color: var(--cpu);
+  background: var(--cpu-dim);
+  box-shadow: 0 0 22px var(--cpu-glow), 0 6px 20px rgba(0,0,0,0.5);
+  transform: translateY(-3px);
+}
+
+.choice-btn:active {
+  transform: translateY(0) scale(0.97);
+  box-shadow: none !important;
+}
+
+/* Disabled during CPU thinking — prevents double-play corruption of round state */
+.choice-btn:disabled {
+  opacity: 0.3;
+  cursor: not-allowed;
+  transform: none !important;
+  box-shadow: none !important;
+}
+
+.choice-btn .emoji {
+  font-size: 2.25rem;
+  line-height: 1;
+  filter: drop-shadow(0 2px 6px rgba(0,0,0,0.6));
+}
+
+.choice-btn .name {
+  font-size: 0.625rem;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+
+/* ==================== FOOTER ROW ==================== */
+.footer-row {
+  display: flex;
+  justify-content: center;
+  padding-top: var(--sp-1);
+}
+
+.reset-btn {
+  background: transparent;
+  border: 1px solid var(--border-bright);
+  border-radius: var(--r-full);
+  padding: var(--sp-2) var(--sp-6);
+  font-family: 'Syne', sans-serif;
+  font-size: 0.625rem;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  cursor: pointer;
+  transition: background 0.15s ease, border-color 0.15s ease, color 0.15s ease;
+}
+
+.reset-btn:hover {
+  background: var(--surface-hi);
+  border-color: var(--player);
+  color: var(--player);
+}
+
+/* ==================== ANIMATIONS ==================== */
+@keyframes pop {
+  0%   { transform: scale(0.78); }
+  65%  { transform: scale(1.1); }
+  100% { transform: scale(1); }
+}
+
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  20%       { transform: translateX(-6px); }
+  40%       { transform: translateX(6px); }
+  60%       { transform: translateX(-4px); }
+  80%       { transform: translateX(4px); }
+}
+
+/* CPU "thinking" pulse — communicates that something is happening before the reveal */
+@keyframes thinking {
+  0%, 100% { opacity: 0.25; transform: scale(0.9); }
+  50%       { opacity: 0.9;  transform: scale(1.06); }
+}
+
+.arena-choice.thinking {
+  animation: thinking 0.55s ease infinite;
+  border-color: var(--text-dim);
+}
