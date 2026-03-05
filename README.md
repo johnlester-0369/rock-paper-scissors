@@ -1,37 +1,62 @@
 # Rock · Paper · Scissors
 
-A clean, dark-arcade Rock Paper Scissors game built with vanilla HTML, CSS, and JavaScript — no frameworks, no build tools, no dependencies.
+The classic game — dark arcade edition. Built with vanilla HTML, CSS, and JavaScript. No frameworks, no build tools, no dependencies.
 
 **[▶ Play it live](https://johnlester-0369.github.io/rock-paper-scissors)**
 
 ---
 
-![Game screenshot showing the dark arcade interface with lime and magenta score identity colors](https://johnlester-0369.github.io/rock-paper-scissors/preview.png)
+![Game screenshot showing the dark arcade interface with electric mint and rose-red score identity colors](https://johnlester-0369.github.io/rock-paper-scissors/preview.png)
 
 ---
 
+## Architecture
+
+Five JavaScript modules communicate through clear dependency boundaries:
+````
+          ┌─────────────┐
+          │ index.html  │
+          └──────┬──────┘
+                 │
+                 ▼
+          ┌─────────────┐
+          │   main.js   │
+          └──────┬──────┘
+                 │
+        ┌────────┴────────┐
+        ▼                 ▼
+  ┌───────────┐    ┌───────────┐
+  │  game.js  │    │   ui.js   │
+  └─────┬─────┘    └───────────┘
+        │
+  ┌─────┴──────────────┐
+  ▼                    ▼
+┌──────────┐  ┌──────────────┐
+│ state.js │  │ constants.js │
+└──────────┘  └──────────────┘
+````
+
 ## Features
 
-- Dark arcade aesthetic with electric lime (player) vs. hot magenta (CPU) identity colors
-- 500ms CPU "thinking" animation for dramatic effect before the reveal
+- Dark arcade aesthetic (Obsidian theme) with electric mint (player) vs. rose-red (CPU) identity colors
+- 500ms CPU "thinking" animation before the round reveal
 - Per-round result badge with win / lose / draw states
 - Persistent session scoreboard with bump animation on score change
-- Fully accessible — semantic HTML, `aria-live` result announcements, `aria-label` on all controls
+- Accessible — semantic HTML, `aria-live` result announcements, `aria-label` on all controls
 - Zero dependencies — no npm, no bundler, no runtime libraries
 
 ## Tech Stack
 
 | Concern | Solution |
 |---------|----------|
-| Markup | Semantic HTML5 |
-| Styles | Vanilla CSS with custom properties (design tokens) |
-| Logic | Vanilla JavaScript — ES Modules |
-| Font | [Syne](https://fonts.google.com/specimen/Syne) via Google Fonts |
+| Markup  | Semantic HTML5 |
+| Styles  | Vanilla CSS with custom properties (design tokens) |
+| Logic   | Vanilla JavaScript — ES Modules |
+| Fonts   | [Chakra Petch](https://fonts.google.com/specimen/Chakra+Petch) + [JetBrains Mono](https://fonts.google.com/specimen/JetBrains+Mono) via Google Fonts |
 | Hosting | GitHub Pages |
 
 ## Project Structure
-
-```
+````
 rock-paper-scissors/
 ├── index.html          # Markup only — no inline styles or scripts
 ├── css/
@@ -42,14 +67,13 @@ rock-paper-scissors/
     ├── ui.js           # DOM references and all UI mutation functions
     ├── game.js         # Round orchestration — zero direct DOM access
     └── main.js         # Entry point — event listener wiring only
-```
+````
 
 Each JS file has a single, explicit responsibility. Adding a new move (e.g. Lizard/Spock) requires changes only in `constants.js`. Adding score persistence (e.g. `localStorage`) requires changes only in `state.js`.
 
 ## Running Locally
 
 ES Modules require an HTTP server — browsers block module imports over `file://` due to CORS restrictions.
-
 ```bash
 # Clone the repo
 git clone https://github.com/johnlester-0369/rock-paper-scissors.git
@@ -62,7 +86,6 @@ npx serve .
 Then open [http://localhost:3000](http://localhost:3000) in your browser.
 
 Any static server works — Python, Live Server (VS Code extension), etc.:
-
 ```bash
 # Python alternative
 python3 -m http.server 3000
